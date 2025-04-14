@@ -1,6 +1,6 @@
 helm:
 	helm repo add bitnami https://charts.bitnami.com/bitnami
-	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+	helm repo add spark-operator https://kubeflow.github.io/spark-operator
 	curl -L -H "Accept: application/vnd.github.VERSION.raw" https://api.github.com/repos/AdrienLibert/orderbook/contents/chart.zip\?ref\=clean-repo-for-chart-only-purpose --output chart.zip
 	unzip chart.zip -d .
 
@@ -30,4 +30,4 @@ start: start_kafka start_spark
 	helm install orderbook chart/ --namespace orderbook -f helm/orderbook/values-local.yaml
 
 stop: stop_kafka stop_spark
-	helm uninstall --ignore-not-found orderbook --namespace orderbook
+	helm uninstall orderbook --ignore-not-found orderbook --namespace orderbook
