@@ -29,4 +29,4 @@ COPY ./spark/kafka_spark.py /app/
 
 WORKDIR /app
 
-CMD ["/opt/spark/bin/spark-submit", "--jars", "/app/spark-sql-kafka-0-10_2.12-3.5.5.jar,/app/kafka-clients-3.5.2.jar,/app/spark-token-provider-kafka-0-10_2.12-3.5.5.jar", "/app/kafka_spark.py"]
+#CMD ["/opt/spark/bin/spark-submit", "--jars", "/app/spark-sql-kafka-0-10_2.12-3.5.5.jar,/app/kafka-clients-3.5.2.jar,/app/spark-token-provider-kafka-0-10_2.12-3.5.5.jar", "/app/kafka_spark.py"]
