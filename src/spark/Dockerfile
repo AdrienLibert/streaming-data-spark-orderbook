@@ -10,7 +10,6 @@ RUN set -ex; \
     apt-get install -y gnupg2 wget bash tini libc6 libpam-modules krb5-user libnss3 procps net-tools gosu libnss-wrapper; \
     mkdir -p /opt/spark; \
     mkdir /opt/spark/python; \
-    mkdir -p /opt/spark/examples; \
     mkdir -p /opt/spark/work-dir; \
     chmod g+w /opt/spark/work-dir; \
     touch /opt/spark/RELEASE; \
@@ -43,8 +42,6 @@ RUN set -ex; \
     mv bin /opt/spark/; \
     mv sbin /opt/spark/; \
     mv kubernetes/dockerfiles/spark/decom.sh /opt/; \
-    mv examples /opt/spark/; \
-    ln -s "$(basename /opt/spark/examples/jars/spark-examples_*.jar)" /opt/spark/examples/jars/spark-examples.jar; \
     mv kubernetes/tests /opt/spark/; \
     mv data /opt/spark/; \
     mv python/pyspark /opt/spark/python/pyspark/; \
