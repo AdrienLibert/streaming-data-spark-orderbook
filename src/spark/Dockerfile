@@ -7,18 +7,16 @@ RUN groupadd --system --gid=${spark_uid} spark && \
 
 RUN set -ex; \
     apt-get update; \
-    apt-get install -y gnupg2 wget bash tini libc6 libpam-modules krb5-user libnss3 procps net-tools gosu libnss-wrapper; \
+    apt-get install -y gnupg2 wget bash tini libc6 libpam-modules procps gosu; \
     mkdir -p /opt/spark; \
     mkdir /opt/spark/python; \
     mkdir -p /opt/spark/work-dir; \
     chmod g+w /opt/spark/work-dir; \
     touch /opt/spark/RELEASE; \
     chown -R spark:spark /opt/spark; \
-    echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su; \
     rm -rf /var/lib/apt/lists/*
 
 # Install Apache Spark
-# https://downloads.apache.org/spark/KEYS
 ENV SPARK_TGZ_URL=https://archive.apache.org/dist/spark/spark-3.5.5/spark-3.5.5-bin-hadoop3.tgz \
     SPARK_TGZ_ASC_URL=https://archive.apache.org/dist/spark/spark-3.5.5/spark-3.5.5-bin-hadoop3.tgz.asc \
     GPG_KEY=F28C9C925C188C35E345614DEDA00CE834F0FC5C
@@ -65,6 +63,7 @@ RUN set -ex; \
     rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/spark/jars && \
+    curl -SL https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.1/postgresql-42.7.1.jar -o /opt/spark/jars/postgresql-42.7.1.jar && \
     curl -SL https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.12/3.5.5/spark-sql-kafka-0-10_2.12-3.5.5.jar -o /opt/spark/jars/spark-sql-kafka-0-10_2.12-3.5.5.jar && \
     curl -SL https://repo1.maven.org/maven2/org/apache/spark/spark-token-provider-kafka-0-10_2.12/3.5.5/spark-token-provider-kafka-0-10_2.12-3.5.5.jar -o /opt/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.5.jar && \
     curl -SL https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.4.1/kafka-clients-3.4.1.jar -o /opt/spark/jars/kafka-clients-3.4.1.jar && \
