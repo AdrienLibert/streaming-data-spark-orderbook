@@ -6,13 +6,12 @@ primary:
   initdb:
     scripts:
       init.sql: |
-        CREATE TABLE IF NOT EXISTS trades (
-            trade_id VARCHAR(255) PRIMARY KEY,
-            order_id VARCHAR(255),
-            quantity INTEGER NOT NULL,
-            price DOUBLE PRECISION NOT NULL,
-            action VARCHAR(50),
-            status VARCHAR(50),
-            trade_timestamp BIGINT,
-            processing_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        CREATE TABLE IF NOT EXISTS candlesticks (
+            timestamp TIMESTAMP,
+            open DOUBLE PRECISION,
+            close DOUBLE PRECISION,
+            high DOUBLE PRECISION,
+            low DOUBLE PRECISION,
+            volume INTEGER,
+            PRIMARY KEY (timestamp)
         );

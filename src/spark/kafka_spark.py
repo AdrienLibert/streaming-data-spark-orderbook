@@ -1,11 +1,11 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType
-from pyspark.sql.functions import from_json, col, current_timestamp
+from pyspark.sql.functions import from_json, col, current_timestamp, window, first, last, max, min, sum
 
 spark = SparkSession \
     .builder \
-    .appName("KafkaStreaming") \
-    .config('spark.jars.packages', 'org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.5') \
+    .appName("KafkaStreamingCandlesticks") \
+    .config('spark.jars.packages', 'org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.5,org.postgresql:postgresql:42.2.5') \
     .getOrCreate()
 
 kafka_options = {
@@ -27,34 +27,62 @@ json_schema = StructType([
 ])
 
 json_df = df.selectExpr("CAST(value AS STRING) AS value")
+df_trades = json_df.select(from_json(col("value"), json_schema).alias("trades")) \
+    .select("trades.*") \
+    .filter(col("quantity") != 0) \
+    .withColumn("processing_timestamp", current_timestamp()) \
+    .withColumn("trade_timestamp", col("timestamp").cast("timestamp")) \
+    .withWatermark("trade_timestamp", "10 seconds")
 
-df_final = json_df.select(from_json(col("value"), json_schema).alias("trades")) \
-                  .select("trades.*") \
-                  .filter(col("quantity") != 0) \
-                  .withColumn("processing_timestamp", current_timestamp())
+df_candlesticks = df_trades \
+    .groupBy(window(col("trade_timestamp"), "10 seconds")) \
+    .agg(
+    first("price").alias("open"),
+    last("price").alias("close"),
+    max("price").alias("high"),
+    min("price").alias("low"),
+    sum("quantity").alias("volume")
+) \
+    .select(
+    col("window.start").alias("timestamp"),
+    col("open"),
+    col("close"),
+    col("high"),
+    col("low"),
+    col("volume")
+)
 
-df_final.writeStream.format("console").outputMode("append").start().awaitTermination()
+def write_candlesticks(df, epoch_id):
+    try:
+        existing_timestamps = spark.read \
+            .format("jdbc") \
+            .option("url", "jdbc:postgresql://postgres-postgresql.analytics.svc.cluster.local:5432/analytics") \
+            .option("driver", "org.postgresql.Driver") \
+            .option("dbtable", "candlesticks") \
+            .option("user", "postgres") \
+            .option("password", "postgres") \
+            .load() \
+            .select("timestamp")
 
-# Write to console
-console_query = trades_df.writeStream \
-    .format("console") \
-    .outputMode("append") \
-    .start()
+        df_new = df.join(existing_timestamps, "timestamp", "left_anti")
 
-write_to_postgres = batch_df.write \
-    .format("jdbc") \
-    .option("url", "jdbc:postgresql://postgres-postgresql.analytics.svc.cluster.local:5432/analytics") \
-    .option("user", "postgres") \
-    .option("password", "postgres") \
-    .option("dbtable", "trades") \
-    .option("driver", "org.postgresql.Driver") \
-    .mode("append") \
-    .save()
+        df_new.write \
+            .mode("append") \
+            .format("jdbc") \
+            .option("url", "jdbc:postgresql://postgres-postgresql.analytics.svc.cluster.local:5432/analytics") \
+            .option("driver", "org.postgresql.Driver") \
+            .option("dbtable", "candlesticks") \
+            .option("user", "postgres") \
+            .option("password", "postgres") \
+            .save()
+    except Exception as e:
+        print(f"Error writing candlestick batch {epoch_id}: {str(e)}")
+        raise
 
-# Write to PostgreSQL
-postgres_query = trades_df.writeStream \
-    .foreachBatch(write_to_postgres) \
-    .outputMode("append") \
+query = df_candlesticks.writeStream \
+    .foreachBatch(write_candlesticks) \
+    .option("checkpointLocation", "/tmp/spark-checkpoint") \
+    .trigger(processingTime="10 seconds") \
     .start()
 
 spark.streams.awaitAnyTermination()

@@ -16,6 +16,6 @@ spec:
     memory: 512m
     serviceAccount: spark-operator-spark
   executor:
-    instances: 1
+    instances: 2
     cores: 1
     memory: 512m
