@@ -1,5 +1,5 @@
 traderpool:
-  numTraders: "20"
+  numTraders: "60"
   resources:
     requests:
       cpu: "10m"

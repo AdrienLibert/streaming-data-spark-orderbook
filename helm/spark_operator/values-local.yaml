@@ -4,3 +4,21 @@ webhook:
 spark:
   jobNamespaces:
     - analytics
+
+controller:
+  maxTrackedExecutorPerApp: 100
+  volumes:
+    - name: tmp
+      emptyDir:
+        sizeLimit: 500Mi
+  uiService:
+    enable: false
+  uiIngress:
+    enable: false
+  batchScheduler:
+    enable: false
+prometheus:
+  metrics:
+    enable: false
+  podMonitor:
+    create: false

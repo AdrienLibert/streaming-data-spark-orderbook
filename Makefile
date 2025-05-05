@@ -5,7 +5,7 @@ helm:
 	unzip chart.zip -d .
 
 clear_helm:
-	helm repo remove flink-operator-repo
+	helm repo remove bitnami
 	helm repo remove prometheus-community
 
 start_kafka:
@@ -14,10 +14,10 @@ start_kafka:
 stop_kafka:
 	helm uninstall --ignore-not-found bitnami -n orderbook
 
-build_deps: # TODO: change to main branch after orderbook repo is clean
-	docker build https://github.com/AdrienLibert/orderbook.git#clean-repo-for-chart-only-purpose:src/kafka_init -t local/kafka-init
-	docker build https://github.com/AdrienLibert/orderbook.git#clean-repo-for-chart-only-purpose:src/orderbook -t local/orderbook
-	docker build https://github.com/AdrienLibert/orderbook.git#clean-repo-for-chart-only-purpose:src/traderpool -t local/traderpool
+build_deps:
+	docker build https://github.com/AdrienLibert/orderbook.git#main:src/kafka_init -t local/kafka-init
+	docker build https://github.com/AdrienLibert/orderbook.git#main:src/orderbook -t local/orderbook
+	docker build https://github.com/AdrienLibert/orderbook.git#main:src/traderpool -t local/traderpool
 	docker build -t local/spark:3.5.5 -f src/spark/Dockerfile src
 
 start_spark_operator:
