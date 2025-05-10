@@ -13,9 +13,9 @@ spec:
   sparkVersion: 3.5.5
   driver:
     cores: 1
-    memory: 384m
+    memory: 800m
     serviceAccount: spark-operator-spark
   executor:
-    instances: 1
+    instances: 2
     cores: 1
-    memory: 384m
+    memory: 800m
