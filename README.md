@@ -38,7 +38,7 @@ make stop
 ![candle stick](img/candle1.JPG)
 ![candle stick](img/candle2.JPG)
 
-Created using Grafana, visualizes the price evolution of a financial asset over time. 
+Created using Grafana, visualizes the price evolution of a asset over time. 
 Each candlestick displays key data points for a specific time period, including:
 
 Open: The price at the start of the period.
